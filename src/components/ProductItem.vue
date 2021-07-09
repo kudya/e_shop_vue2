@@ -28,6 +28,7 @@
 
 <script>
 import eventBus from '@/eventBus';
+import numberFormat from '@/helpers/numberFormat';
 
 export default {
   props: ['product'],
@@ -40,6 +41,9 @@ export default {
     goToPage(pageName, pageParams) {
       eventBus.$emit('goToPage', pageName, pageParams);
     },
+  },
+  filters: {
+    numberFormat,
   },
 };
 </script>

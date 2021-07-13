@@ -17,6 +17,8 @@
       :color.sync="filterColor"
       />
       <section class="catalog">
+        <div v-if="productsLoading">Загрузка товаров...</div>
+        <div v-if="productsLoadingFailed">Произошла ошибка при загрузке товаров <button @click.prevent="loadProducts">Попробовать ещё раз</button></div>
         <ProductList :products="products" />
         <BasePagination v-model="page" :count="countProducts" :per-page="productsPerPage"/>
       </section>
@@ -42,9 +44,14 @@ export default {
       filterPriceTo: 0,
       filterCategoryId: 0,
       filterColor: null,
+
       page: 1,
       productsPerPage: 3,
+
       productsData: null,
+
+      productsLoading: false,
+      productsLoadingFailed: false,
     };
   },
   computed: {
@@ -60,9 +67,11 @@ export default {
   },
   methods: {
     loadProducts() {
+      this.productsLoading = true;
+      this.productsLoadingFailed = false;
       clearTimeout(this.loadProductsTimer);
       this.loadProductsTimer = setTimeout(() => {
-        axios.get(`${API_BASE_URL}/api/products`, {
+        axios.get(`${API_BASE_URL}/api/products2`, {
           params: {
             page: this.page,
             limit: this.productsPerPage,
@@ -71,8 +80,10 @@ export default {
             maxPrice: this.filterPriceTo,
           },
         })
-          .then((response) => { this.productsData = response.data; });
-      }, 0);
+          .then((response) => { this.productsData = response.data; })
+          .catch(() => { this.productsLoadingFailed = true; })
+          .then(() => { this.productsLoading = false; });
+      }, 5000);
     },
   },
   watch: {

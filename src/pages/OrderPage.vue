@@ -28,7 +28,7 @@
     </div>
 
     <section class="cart">
-      <form class="cart__form form" action="#" method="POST">
+      <form class="cart__form form" action="#" method="POST" @submit.prevent="order">
         <div class="cart__field">
           <div class="cart__data">
             <BaseFormText title="ФИО" :error="formError.name" v-model="formData.name" placeholder="Введите ваше полное имя"/>
@@ -39,7 +39,7 @@
 
             <BaseFormText title="Email" type="email" :error="formError.email" v-model="formData.email" placeholder="Введи ваш Email"/>
 
-            <BaseFormTextArea title="Комментарий к заказу" :error="formError.comments" v-model="formData.comments" placeholder="Ваши пожелания" />
+            <BaseFormTextArea title="Комментарий к заказу" :error="formError.comment" v-model="formData.comment" placeholder="Ваши пожелания" />
           </div>
 
           <div class="cart__options">
@@ -113,10 +113,10 @@
             Оформить заказ
           </button>
         </div>
-        <div class="cart__error form__error-block">
+        <div class="cart__error form__error-block" v-if="formErrorMessage">
           <h4>Заявка не отправлена!</h4>
           <p>
-            Похоже произошла ошибка. Попробуйте отправить снова или перезагрузите страницу.
+            {{ formErrorMessage }}
           </p>
         </div>
       </form>
@@ -125,6 +125,9 @@
 </template>
 
 <script>
+import axios from 'axios';
+
+import { API_BASE_URL } from '@/config';
 import BaseFormText from '@/components/BaseFormText.vue';
 import BaseFormTextArea from '@/components/BaseFormTextArea.vue';
 
@@ -135,7 +138,27 @@ export default {
       test: 'TEST',
       formData: {},
       formError: {},
+      formErrorMessage: '',
     };
+  },
+  methods: {
+    order() {
+      this.formError = {};
+      axios.post(`${API_BASE_URL}/api/orders`, {
+        ...this.formData,
+      }, {
+        params: {
+          userAccessKey: this.$store.state.userAccessKey,
+        },
+      })
+        .then(() => {
+          this.$store.commit('resetCart');
+        })
+        .catch((error) => {
+          this.formError = error.response.data.error.request || {};
+          this.formErrorMessage = error.response.data.error.message || '';
+        });
+    },
   },
 
 };

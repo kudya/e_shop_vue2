@@ -20,7 +20,7 @@
       </ul>
 
       <h1 class="content__title">
-        Заказ оформлен <span>№ 23621</span>
+        Заказ оформлен <span>№ {{ orderInfo.id }}</span>
       </h1>
     </div>
 
@@ -33,46 +33,9 @@
           </p>
 
           <ul class="dictionary">
-            <li class="dictionary__item">
-              <span class="dictionary__key">
-                Получатель
-              </span>
-              <span class="dictionary__value">
-                Иванова Василиса Алексеевна
-              </span>
-            </li>
-            <li class="dictionary__item">
-              <span class="dictionary__key">
-                Адрес доставки
-              </span>
-              <span class="dictionary__value">
-                Москва, ул. Ленина, 21, кв. 33
-              </span>
-            </li>
-            <li class="dictionary__item">
-              <span class="dictionary__key">
-                Телефон
-              </span>
-              <span class="dictionary__value">
-                8 800 989 74 84
-              </span>
-            </li>
-            <li class="dictionary__item">
-              <span class="dictionary__key">
-                Email
-              </span>
-              <span class="dictionary__value">
-                lalala@mail.ru
-              </span>
-            </li>
-            <li class="dictionary__item">
-              <span class="dictionary__key">
-                Способ оплаты
-              </span>
-              <span class="dictionary__value">
-                картой при получении
-              </span>
-            </li>
+
+            <OrderContactsItem v-for="contact in contactsOrder" :key="contact.key" :contact="contact" />
+
           </ul>
         </div>
 
@@ -85,14 +48,32 @@
 
 <script>
 import OrderCartSummary from '@/components/OrderCartSummary.vue';
+import OrderContactsItem from '@/components/OrderContactsItem.vue';
 
 export default {
-  components: { OrderCartSummary },
+  components: { OrderCartSummary, OrderContactsItem },
   created() {
     if (this.$store.state.orderInfo && this.$store.state.orderInfo.id === this.$route.params.is) {
       return;
     }
     this.$store.dispatch('loadOrderInfo', this.$route.params.id);
+  },
+  computed: {
+    orderInfo() {
+      return this.$store.state.orderInfo;
+    },
+
+    contactsOrder() {
+      return (
+        [
+          { key: 'Получатель', value: this.orderInfo.name },
+          { key: 'Адрес доставки', value: this.orderInfo.address },
+          { key: 'Телефон', value: this.orderInfo.phone },
+          { key: 'Email', value: this.orderInfo.email },
+          { key: 'Способ оплаты', value: 'картой при получении' },
+        ]
+      );
+    },
   },
 };
 </script>

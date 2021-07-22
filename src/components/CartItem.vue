@@ -11,20 +11,21 @@
     </span>
 
     <div class="product__counter form__counter">
-      <button type="button" aria-label="Убрать один товар">
+      <button type="button" aria-label="Убрать один товар" @click="decreaseItems">
         <svg width="10" height="10" fill="currentColor">
           <use xlink:href="#icon-minus"></use>
         </svg>
       </button>
 
-      <input type="text" v-model.number="amount" name="count">
+      <input type="text" v-model.number="amount" name="count" @input="validateInput">
 
-      <button type="button" aria-label="Добавить один товар">
+      <button type="button" aria-label="Добавить один товар" @click="increaseItems">
         <svg width="10" height="10" fill="currentColor">
           <use xlink:href="#icon-plus"></use>
         </svg>
       </button>
     </div>
+    <div v-show="quantityError">{{ quantityError  }}</div>
 
     <b class="product__price">
       {{ (item.amount * item.product.price) | numberFormat }} ₽
@@ -43,6 +44,11 @@ import numberFormat from '@/helpers/numberFormat';
 // import { mapActions } from 'vuex';
 
 export default {
+  data() {
+    return {
+      quantityError: '',
+    };
+  },
   filters: {
     numberFormat,
   },
@@ -60,6 +66,23 @@ export default {
   methods: {
     deleteProduct() {
       this.$store.dispatch('deleteCartProduct', this.item.productId);
+    },
+    increaseItems() {
+      this.amount += 1;
+    },
+    decreaseItems() {
+      if (this.amount > 0) {
+        this.amount -= 1;
+      }
+    },
+    validateInput() {
+      if (this.amount < 1 || typeof this.amount !== 'number') {
+        this.quantityError = 'Обратите внимнаие: сейчас в поле с количеством товаров указан некорректный тип данных';
+        this.$emit('disableButton', true);
+      } else {
+        this.quantityError = '';
+        this.$emit('disableButton', false);
+      }
     },
   },
 };

@@ -99,15 +99,15 @@
 
             <div class="item__row">
               <div class="form__counter">
-                <button type="button" aria-label="Убрать один товар">
+                <button type="button" aria-label="Убрать один товар" @click="decreaseItems">
                   <svg width="12" height="12" fill="currentColor">
                     <use xlink:href="#icon-minus"></use>
                   </svg>
                 </button>
 
-                <input type="text" v-model.number="productAmount">
+                <input type="text" v-model.number="productAmount" @input="validateInput">
 
-                <button type="button" aria-label="Добавить один товар">
+                <button type="button" aria-label="Добавить один товар" @click="increaseItems">
                   <svg width="12" height="12" fill="currentColor">
                     <use xlink:href="#icon-plus"></use>
                   </svg>
@@ -120,6 +120,7 @@
               </button>
             </div>
           </form>
+          <div v-show="quantityError">{{ quantityError }}</div>
         </div>
       </div>
 
@@ -191,6 +192,8 @@ export default {
 
       productAdded: false,
       productAddSending: false,
+
+      quantityError: '',
     };
   },
   filters: {
@@ -217,6 +220,11 @@ export default {
         .then(() => {
           this.productAdded = true;
           this.productAddSending = false;
+          this.quantityError = '';
+        })
+        .catch(() => {
+          this.quantityError = 'Ошибка добавления товара в корзину: некорректно заполнено поле количества товаров';
+          this.productAddSending = false;
         });
     },
     loadProduct() {
@@ -226,6 +234,21 @@ export default {
         .then((response) => { this.productData = response.data; })
         .catch(() => { this.productLoadingFailed = true; })
         .then(() => { this.productLoading = false; });
+    },
+    increaseItems() {
+      this.productAmount += 1;
+    },
+    decreaseItems() {
+      if (this.productAmount > 0) {
+        this.productAmount -= 1;
+      }
+    },
+    validateInput() {
+      if (this.productAmount < 1 || typeof this.productAmount !== 'number') {
+        this.quantityError = 'Обратите внимнаие: сейчас в поле с количеством товаров указан некорректный тип данных';
+      } else {
+        this.quantityError = '';
+      }
     },
   },
   watch: {

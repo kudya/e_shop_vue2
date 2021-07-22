@@ -86,8 +86,9 @@
         </div>
 
         <OrderCartSummary>
-          <button class="cart__button button button--primery" type="submit">
-            Оформить заказ
+          <button class="cart__button button button--primery" style="display: flex; justify-content: center; align-items: center; max-height: 48px;" type="submit">
+            <span v-show="!orderMaking">Оформить заказ</span>
+            <BasePreloader v-show="orderMaking" />
           </button>
         </OrderCartSummary>
 
@@ -109,36 +110,45 @@ import { API_BASE_URL } from '@/config';
 import BaseFormText from '@/components/BaseFormText.vue';
 import BaseFormTextArea from '@/components/BaseFormTextArea.vue';
 import OrderCartSummary from '@/components/OrderCartSummary.vue';
+import BasePreloader from '@/components/BasePreloader.vue';
 
 export default {
-  components: { BaseFormText, BaseFormTextArea, OrderCartSummary },
+  components: {
+    BaseFormText, BaseFormTextArea, OrderCartSummary, BasePreloader,
+  },
   data() {
     return {
       test: 'TEST',
       formData: {},
       formError: {},
       formErrorMessage: '',
+      orderMaking: false,
     };
   },
   methods: {
     order() {
+      this.orderMaking = true;
       this.formError = {};
-      axios.post(`${API_BASE_URL}/api/orders`, {
-        ...this.formData,
-      }, {
-        params: {
-          userAccessKey: this.$store.state.userAccessKey,
-        },
-      })
-        .then((response) => {
-          this.$store.commit('resetCart');
-          this.$store.commit('updateOrderInfo', response.data);
-          this.$router.push({ name: 'orderInfo', params: { id: response.data.id } });
+      setTimeout(() => {
+        axios.post(`${API_BASE_URL}/api/orders`, {
+          ...this.formData,
+        }, {
+          params: {
+            userAccessKey: this.$store.state.userAccessKey,
+          },
         })
-        .catch((error) => {
-          this.formError = error.response.data.error.request || {};
-          this.formErrorMessage = error.response.data.error.message || '';
-        });
+          .then((response) => {
+            this.$store.commit('resetCart');
+            this.$store.commit('updateOrderInfo', response.data);
+            this.$router.push({ name: 'orderInfo', params: { id: response.data.id } });
+            this.orderMaking = false;
+          })
+          .catch((error) => {
+            this.orderMaking = false;
+            this.formError = error.response.data.error.request || {};
+            this.formErrorMessage = error.response.data.error.message || '';
+          });
+      }, 2000);
     },
   },
 

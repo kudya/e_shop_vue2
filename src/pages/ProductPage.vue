@@ -114,11 +114,10 @@
                 </button>
               </div>
 
-              <button class="button button--primery" type="submit" :disabled="productAddSending">
-                В корзину
+              <button class="button button--primery" style="display: flex; justify-content: center; align-items: center; max-height: 70px;" type="submit" :disabled="productAddSending">
+                <span v-show="!productAddSending" >В корзину</span>
+                <BasePreloader v-show="productAddSending" />
               </button>
-              <div v-show="productAddSending">Товар добавляется в корзину</div>
-              <div v-show="productAdded">Товар добавлен в корзину</div>
             </div>
           </form>
         </div>
@@ -173,13 +172,16 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
+import axios from 'axios';
+
 import goToPage from '@/helpers/goToPage';
 import numberFormat from '@/helpers/numberFormat';
-import axios from 'axios';
 import { API_BASE_URL } from '@/config';
-import { mapActions } from 'vuex';
+import BasePreloader from '@/components/BasePreloader.vue';
 
 export default {
+  components: { BasePreloader },
   data() {
     return {
       productAmount: 1,
